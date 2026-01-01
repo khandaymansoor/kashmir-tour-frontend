@@ -1,12 +1,12 @@
-"use client";
+
 
 import { Suspense } from "react";
-import CheckoutForm from "./CheckoutForm";
+import CheckoutClient from "./CheckoutClient";
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<p style={{ padding: "40px" }}>Loading checkout...</p>}>
-      <CheckoutForm />
+    <Suspense fallback={<div>Loading checkout...</div>}>
+      <CheckoutClient />
     </Suspense>
   );
 }

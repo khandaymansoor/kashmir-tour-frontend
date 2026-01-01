@@ -1,9 +1,10 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState, CSSProperties } from "react";
+import { useState,CSSProperties } from "react";
 
-export default function CheckoutForm() {
+
+export default function CheckoutClient() {
   const searchParams = useSearchParams();
   const tourId = searchParams.get("tourId");
 
@@ -98,6 +99,7 @@ const styles: Record<string, CSSProperties> = {
     padding: "30px",
     borderRadius: "16px",
     width: "360px",
+    boxShadow: "0 15px 40px rgba(0,0,0,0.4)",
   },
   heading: {
     textAlign: "center",
