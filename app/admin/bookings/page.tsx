@@ -1,29 +1,103 @@
 "use client";
+import { useState } from "react";
 
-import { useEffect, useState } from "react";
+export default function BookingPage() {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [tourName, setTourName] = useState("");
+  const [persons, setPersons] = useState(1);
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("");
 
-export default function AdminBookings() {
-  const [bookings, setBookings] = useState<any[]>([]);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  useEffect(() => {
-    fetch("http://localhost:3001/admin/bookings")
-      .then((res) => res.json())
-      .then((data) => setBookings(data));
-  }, []);
+    setStatus("Submitting...");
+
+    const res = await fetch(
+      "https://kashmir-tour-backend.onrender.com/bookings",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          phone,
+          email,
+          tour_name: tourName,
+          persons,
+          message,
+        }),
+      }
+    );
+
+    const data = await res.json();
+
+    if (data.success) {
+      setStatus("✅ Booking successful!");
+      setName("");
+      setPhone("");
+      setEmail("");
+      setTourName("");
+      setPersons(1);
+      setMessage("");
+    } else {
+      setStatus("❌ Booking failed. Try again.");
+    }
+  };
 
   return (
-    <div style={{ padding: "40px" }}>
-      <h1>📋 Booking Requests</h1>
+    <div style={{ padding: "20px", maxWidth: "500px", margin: "auto" }}>
+      <h2>Book Your Tour</h2>
 
-      {bookings.map((b) => (
-        <div key={b.id} style={{ borderBottom: "1px solid #ccc", marginBottom: "15px" }}>
-          <p><b>Name:</b> {b.name}</p>
-          <p><b>Phone:</b> {b.phone}</p>
-          <p><b>Email:</b> {b.email}</p>
-          <p><b>Tour ID:</b> {b.tour_id}</p>
-          <p><b>Date:</b> {b.travel_date}</p>
-        </div>
-      ))}
+      <form onSubmit={handleSubmit}>
+        <input
+          placeholder="Your Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+
+        <input
+          placeholder="Phone Number"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          required
+        />
+
+        <input
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
+
+        <input
+          placeholder="Tour Name"
+          value={tourName}
+          onChange={(e) => setTourName(e.target.value)}
+          required
+        />
+
+        <input
+          type="number"
+          min="1"
+          placeholder="Persons"
+          value={persons}
+          onChange={(e) => setPersons(Number(e.target.value))}
+        />
+
+        <textarea
+          placeholder="Message"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+
+        <button type="submit">Confirm Booking</button>
+      </form>
+
+      <p>{status}</p>
     </div>
   );
 }
