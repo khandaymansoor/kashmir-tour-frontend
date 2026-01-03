@@ -13,11 +13,14 @@ export default function HomePage() {
   const [tours, setTours] = useState<Tour[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:3001/tours")
-      .then((res) => res.json())
-      .then((data) => setTours(data))
-      .catch((err) => console.error(err));
-  }, []);
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}/tours`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("Tours from backend:", data);
+      setTours(data);
+    })
+    .catch(err => console.error("Error:", err));
+}, []); 
 
   return (
     <div style={styles.page}>
