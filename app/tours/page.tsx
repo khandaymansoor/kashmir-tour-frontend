@@ -14,14 +14,14 @@ export default function ToursPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:3001/tours")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch tours");
-        return res.json();
-      })
-      .then((data) => setTours(data))
-      .catch((err) => setError(err.message));
-  }, []);
+  fetch(`${process.env.NEXT_PUBLIC_API_URL}/tours`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("Tours from backend:", data);
+      setTours(data);
+    })
+    .catch(err => console.error("Error:", err));
+}, []); 
 
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
