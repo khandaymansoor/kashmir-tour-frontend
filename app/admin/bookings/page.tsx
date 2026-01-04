@@ -6,7 +6,7 @@ export default function AdminBookingsPage() {
   return (
     <div style={{ padding: 30 }}>
       <h1>Admin Bookings</h1>
-      <p>Admin panel loaded successfully</p>
+      <p>Admin page loaded successfully.</p>
     </div>
   );
 }

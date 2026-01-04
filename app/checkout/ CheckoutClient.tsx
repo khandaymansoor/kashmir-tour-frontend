@@ -6,35 +6,50 @@ import type { CSSProperties } from "react";
 
 export default function CheckoutClient() {
   const searchParams = useSearchParams();
-  const tourId = searchParams.get("tourId");
+
+  // ✅ MUST MATCH WHAT YOU SEND FROM TOUR PAGE
+  const tourName = searchParams.get("tour") || "Unknown Tour";
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [travelDate, setTravelDate] = useState("");
-  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setStatus("Submitting...");
 
-    const res = await fetch("http://localhost:3001/bookings", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        tourId,
-        name,
-        phone,
-        travelDate,
-      }),
-    });
+    try {
+      const res = await fetch(
+        "https://kashmir-tour-backend.onrender.com/bookings",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            phone,
+            email: "",            // backend requires this
+            tour_name: tourName,  // backend column
+            persons: 1,           // backend requires this
+            message: `Travel date: ${travelDate}`,
+          }),
+        }
+      );
 
-    if (res.ok) {
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error("Booking failed");
+      }
+
+      // ✅ WhatsApp redirect
       const whatsappText = encodeURIComponent(
-        `New Tour Booking\n\nName: ${name}\nPhone: ${phone}\nTour ID: ${tourId}\nTravel Date: ${travelDate}`
+        `New Tour Booking\n\nName: ${name}\nPhone: ${phone}\nTour: ${tourName}\nTravel Date: ${travelDate}`
       );
 
       window.location.href = `https://wa.me/919622681962?text=${whatsappText}`;
-    } else {
-      setMessage("❌ Booking failed. Try again.");
+    } catch (err) {
+      setStatus("❌ Booking failed. Try again.");
     }
   };
 
@@ -42,7 +57,8 @@ export default function CheckoutClient() {
     <div style={styles.page}>
       <div style={styles.overlay}>
         <div style={styles.card}>
-          <h1 style={styles.heading}>❄️ Book Your Kashmir Tour</h1>
+          <h1 style={styles.heading}>❄️ Book Your Tour</h1>
+          <p><b>Tour:</b> {tourName}</p>
 
           <form onSubmit={handleSubmit}>
             <input
@@ -72,13 +88,14 @@ export default function CheckoutClient() {
             <button style={styles.button}>Confirm Booking</button>
           </form>
 
-          {message && <p style={styles.message}>{message}</p>}
+          {status && <p style={styles.message}>{status}</p>}
         </div>
       </div>
     </div>
   );
 }
 
+/* ---------- STYLES ---------- */
 const styles: Record<string, CSSProperties> = {
   page: {
     minHeight: "100vh",
