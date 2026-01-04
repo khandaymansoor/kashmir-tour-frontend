@@ -3,26 +3,68 @@
 import { useEffect, useState,CSSProperties } from "react";
 import Link from "next/link";
 
+type Tour = {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+};
+
 export default function TourDetailsPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const [tour, setTour] = useState<any>(null);
+  const [tour, setTour] = useState<Tour | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("https://kashmir-tour-backend.onrender.com/tours")
-      .then((res) => res.json())
-      .then((data) => {
-        const foundTour = data.find(
-          (t: any) => String(t.id) === params.id
+    async function loadTour() {
+      try {
+        const res = await fetch(
+          "https://kashmir-tour-backend.onrender.com/tours"
         );
-        setTour(foundTour);
-      });
+
+        if (!res.ok) {
+          throw new Error("Failed to fetch tours");
+        }
+
+        const data: Tour[] = await res.json();
+
+        // ✅ SAFE ID MATCH
+        const found = data.find(
+          (t) => String(t.id) === String(params.id)
+        );
+
+        if (!found) {
+          setError("Tour not found");
+        } else {
+          setTour(found);
+        }
+      } catch (err) {
+        setError("Error loading tour");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadTour();
   }, [params.id]);
 
+  // ===============================
+  // UI STATES
+  // ===============================
+  if (loading) {
+    return <p style={{ padding: 20 }}>Loading tour details…</p>;
+  }
+
+  if (error) {
+    return <p style={{ padding: 20 }}>{error}</p>;
+  }
+
   if (!tour) {
-    return <p style={{ padding: 20 }}>Loading tour details...</p>;
+    return <p style={{ padding: 20 }}>Tour not available</p>;
   }
 
   return (
@@ -33,7 +75,9 @@ export default function TourDetailsPage({
 
       <br />
 
-      <Link href={`/bookings?tour=${encodeURIComponent(tour.title)}`}>
+      <Link
+        href={`/bookings?tour=${encodeURIComponent(tour.title)}`}
+      >
         <button
           style={{
             padding: "12px 20px",
