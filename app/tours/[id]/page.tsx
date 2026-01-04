@@ -1,48 +1,52 @@
 "use client";
 
-import { useEffect, useState, CSSProperties } from "react";
+import { useEffect, useState,CSSProperties } from "react";
 import Link from "next/link";
 
-type Tour = {
-  id: number;
-  title: string;
-  price: number;
-};
-
-export default function ToursPage() {
-  const [tours, setTours] = useState<Tour[]>([]);
-  const [error, setError] = useState("");
+export default function TourDetailsPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const [tour, setTour] = useState<any>(null);
 
   useEffect(() => {
-  fetch(`${process.env.NEXT_PUBLIC_API_URL}/tours`)
-    .then(res => res.json())
-    .then(data => {
-      console.log("Tours from backend:", data);
-      setTours(data);
-    })
-    .catch(err => console.error("Error:", err));
-}, []); 
+    fetch("https://kashmir-tour-backend.onrender.com/tours")
+      .then((res) => res.json())
+      .then((data) => {
+        const foundTour = data.find(
+          (t: any) => String(t.id) === params.id
+        );
+        setTour(foundTour);
+      });
+  }, [params.id]);
 
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
+  if (!tour) {
+    return <p style={{ padding: 20 }}>Loading tour details...</p>;
+  }
 
   return (
-    <div style={styles.page}>
-      <div style={styles.overlay}>
-        <h1 style={styles.heading}>❄️ Kashmir Winter Tour Packages</h1>
+    <div style={{ padding: 30 }}>
+      <h1>{tour.title}</h1>
+      <p>{tour.description}</p>
+      <h3>Price: ₹ {tour.price}</h3>
 
-        <div style={styles.grid}>
-          {tours.map((tour) => (
-            <div key={tour.id} style={styles.card}>
-              <h3>{tour.title}</h3>
-              <p style={styles.price}>₹ {tour.price}</p>
+      <br />
 
-              <Link href={`/tours/${tour.id}`}>
-                <button style={styles.button}>View Details</button>
-              </Link>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Link href={`/bookings?tour=${encodeURIComponent(tour.title)}`}>
+        <button
+          style={{
+            padding: "12px 20px",
+            background: "green",
+            color: "white",
+            border: "none",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          Book This Tour
+        </button>
+      </Link>
     </div>
   );
 }
