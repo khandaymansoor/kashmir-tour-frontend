@@ -2,101 +2,81 @@
 
 export const dynamic = "force-dynamic";
 
-import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function BookingPage() {
-  const searchParams = useSearchParams();
-  const tour = searchParams.get("tour") || "";
+type Booking = {
+  id: number;
+  name: string;
+  phone: string;
+  email: string;
+  tour_name: string;
+  persons: number;
+  message: string;
+};
 
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [email, setEmail] = useState("");
-  const [persons, setPersons] = useState(1);
-  const [message, setMessage] = useState("");
-  const [status, setStatus] = useState("");
+export default function AdminBookingsPage() {
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setStatus("Submitting...");
+  useEffect(() => {
+    async function loadBookings() {
+      try {
+        const res = await fetch(
+          "https://kashmir-tour-backend.onrender.com/admin/bookings"
+        );
 
-    try {
-      const res = await fetch(
-        "https://kashmir-tour-backend.onrender.com/bookings",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name,
-            phone,
-            email,
-            tour_name: tour,
-            persons,
-            message,
-          }),
+        if (!res.ok) {
+          throw new Error("Failed to fetch bookings");
         }
-      );
 
-      const data = await res.json();
-
-      if (data.success) {
-        setStatus("✅ Booking successful!");
-        setName("");
-        setPhone("");
-        setEmail("");
-        setPersons(1);
-        setMessage("");
-      } else {
-        setStatus("❌ Booking failed");
+        const data = await res.json();
+        setBookings(data);
+      } catch (err) {
+        setError("Error loading bookings");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setStatus("❌ Server error");
     }
-  }
+
+    loadBookings();
+  }, []);
+
+  if (loading) return <p style={{ padding: 20 }}>Loading bookings…</p>;
+  if (error) return <p style={{ padding: 20 }}>{error}</p>;
 
   return (
-    <div style={{ padding: 30, maxWidth: 500 }}>
-      <h1>Book Tour</h1>
-      <p><strong>Tour:</strong> {tour}</p>
+    <div style={{ padding: 30 }}>
+      <h1>Admin – Bookings</h1>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        /><br /><br />
-
-        <input
-          placeholder="Phone"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          required
-        /><br /><br />
-
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        /><br /><br />
-
-        <input
-          type="number"
-          min={1}
-          value={persons}
-          onChange={(e) => setPersons(Number(e.target.value))}
-        /><br /><br />
-
-        <textarea
-          placeholder="Message"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-        /><br /><br />
-
-        <button type="submit">Submit Booking</button>
-      </form>
-
-      <p>{status}</p>
+      {bookings.length === 0 ? (
+        <p>No bookings found</p>
+      ) : (
+        <table border={1} cellPadding={10}>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Tour</th>
+              <th>Persons</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bookings.map((b) => (
+              <tr key={b.id}>
+                <td>{b.name}</td>
+                <td>{b.phone}</td>
+                <td>{b.email}</td>
+                <td>{b.tour_name}</td>
+                <td>{b.persons}</td>
+                <td>{b.message}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
