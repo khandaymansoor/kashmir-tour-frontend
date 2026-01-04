@@ -91,21 +91,8 @@ export default function TourDetailsPage() {
             borderRadius: "6px",
             cursor: "pointer",
           }}
-        ><Link href={`/checkout?tour=${encodeURIComponent(tour.title)}`}>
-  <button
-    style={{
-      padding: "12px 20px",
-      background: "green",
-      color: "white",
-      border: "none",
-      borderRadius: "6px",
-      cursor: "pointer",
-      marginTop: "20px",
-    }}
-  >
-    Book This Tour
-  </button>
-</Link>
+        >
+  
           Book This Tour
         </button>
       </Link>
