@@ -8,6 +8,7 @@ type Tour = {
   title: string;
   description: string;
   price: number;
+  image?: string;
 };
 
 export default function TourDetailsPage({
@@ -20,72 +21,90 @@ export default function TourDetailsPage({
   const [error, setError] = useState("");
 
   useEffect(() => {
-    async function loadTour() {
+    async function fetchTour() {
       try {
         const res = await fetch(
-          "https://kashmir-tour-backend.onrender.com/tours"
+          "https://kashmir-tour-backend.onrender.com/tours",
+          { cache: "no-store" }
         );
 
         if (!res.ok) {
           throw new Error("Failed to fetch tours");
         }
 
-        const data: Tour[] = await res.json();
+        const tours: Tour[] = await res.json();
 
-        // ✅ SAFE ID MATCH
-        const found = data.find(
+        const foundTour = tours.find(
           (t) => String(t.id) === String(params.id)
         );
 
-        if (!found) {
+        if (!foundTour) {
           setError("Tour not found");
         } else {
-          setTour(found);
+          setTour(foundTour);
         }
       } catch (err) {
-        setError("Error loading tour");
+        setError("Error loading tour details");
       } finally {
         setLoading(false);
       }
     }
 
-    loadTour();
+    fetchTour();
   }, [params.id]);
 
   // ===============================
   // UI STATES
   // ===============================
   if (loading) {
-    return <p style={{ padding: 20 }}>Loading tour details…</p>;
+    return <p style={{ padding: 20 }}>Loading tour details...</p>;
   }
 
   if (error) {
-    return <p style={{ padding: 20 }}>{error}</p>;
+    return <p style={{ padding: 20, color: "red" }}>{error}</p>;
   }
 
   if (!tour) {
     return <p style={{ padding: 20 }}>Tour not available</p>;
   }
 
+  // ===============================
+  // MAIN UI
+  // ===============================
   return (
-    <div style={{ padding: 30 }}>
+    <div style={{ padding: "30px", maxWidth: "800px", margin: "auto" }}>
       <h1>{tour.title}</h1>
+
+      {tour.image && (
+        <img
+          src={tour.image}
+          alt={tour.title}
+          style={{
+            width: "100%",
+            maxHeight: "400px",
+            objectFit: "cover",
+            borderRadius: "12px",
+            marginBottom: "20px",
+          }}
+        />
+      )}
+
       <p>{tour.description}</p>
-      <h3>Price: ₹ {tour.price}</h3>
+
+      <h3 style={{ marginTop: "15px" }}>₹ {tour.price}</h3>
 
       <br />
 
-      <Link
-        href={`/bookings?tour=${encodeURIComponent(tour.title)}`}
-      >
+      <Link href={`/bookings?tour=${encodeURIComponent(tour.title)}`}>
         <button
           style={{
-            padding: "12px 20px",
-            background: "green",
+            padding: "12px 22px",
+            backgroundColor: "#0f766e",
             color: "white",
             border: "none",
-            borderRadius: "6px",
+            borderRadius: "8px",
             cursor: "pointer",
+            fontSize: "16px",
           }}
         >
           Book This Tour
@@ -94,7 +113,6 @@ export default function TourDetailsPage({
     </div>
   );
 }
-
 /* ---------- STYLES (TYPED) ---------- */
 const styles: Record<string, CSSProperties> = {
   page: {
