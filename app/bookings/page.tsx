@@ -1,11 +1,11 @@
 import { Suspense } from "react";
 import BookingClient from "./BookingClient";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic"; // Prevents static export errors
 
 export default function BookingsPage() {
   return (
-    <Suspense fallback={<p style={{ padding: 20 }}>Loading booking page…</p>}>
+    <Suspense fallback={<div>Loading booking form...</div>}>
       <BookingClient />
     </Suspense>
   );
